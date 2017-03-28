@@ -73,11 +73,11 @@ module Uploadcare
           file
         end
 
-        before_save "check_#{attribute}_for_uuid"
+        before_save :"check_#{attribute}_for_uuid"
 
-        after_save "store_#{attribute}" if UPLOADCARE_SETTINGS.store_after_save
+        after_save :"store_#{attribute}" if UPLOADCARE_SETTINGS.store_after_save
 
-        after_destroy "delete_#{attribute}" if UPLOADCARE_SETTINGS.delete_after_destroy
+        after_destroy :"delete_#{attribute}" if UPLOADCARE_SETTINGS.delete_after_destroy
       end
     end
   end
