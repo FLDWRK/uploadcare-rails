@@ -27,10 +27,6 @@ module Uploadcare
           end
         end
 
-        # attribute method - return file object
-        # it is not the ::File but ::Rails::File
-        # it has some helpers for rails enviroment
-        # but it also has all the methods of Uploadcare::File so no worries.
         define_method "#{attribute}" do
           send(:"build_file_#{attribute}")
         end
@@ -46,37 +42,21 @@ module Uploadcare
         define_method "store_#{attribute}" do
           file = send(:"build_file_#{attribute}")
           return unless file
-
-          begin
-            file.store
-            ::Rails.cache.write(file.cdn_url, file.marshal_dump) if UPLOADCARE_SETTINGS.cache_files
-          rescue Exception => e
-            logger.error "\nError while saving a file #{file.cdn_url}: #{e.class} (#{e.message}):"
-            logger.error "#{::Rails.backtrace_cleaner.clean(e.backtrace).join("\n ")}"
-          end
-
+          file.store
+          ::Rails.cache.write(file.cdn_url, file.marshal_dump) if UPLOADCARE_SETTINGS.cache_files
           file
         end
 
         define_method "delete_#{attribute}" do
           file = send(:"build_file_#{attribute}")
           return unless file
-
-          begin
-            file.delete
-            ::Rails.cache.write(file.cdn_url, file.marshal_dump) if UPLOADCARE_SETTINGS.cache_files
-          rescue Exception => e
-            logger.error "\nError while deleting a file #{file.cdn_url}: #{e.class} (#{e.message}):"
-            logger.error "#{::Rails.backtrace_cleaner.clean(e.backtrace).join("\n ")}"
-          end
-
+          file.delete
+          ::Rails.cache.write(file.cdn_url, file.marshal_dump) if UPLOADCARE_SETTINGS.cache_files
           file
         end
 
         before_save :"check_#{attribute}_for_uuid"
-
         after_save :"store_#{attribute}" if UPLOADCARE_SETTINGS.store_after_save
-
         after_destroy :"delete_#{attribute}" if UPLOADCARE_SETTINGS.delete_after_destroy
       end
     end
